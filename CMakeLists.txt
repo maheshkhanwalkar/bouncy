@@ -6,5 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(SDL3 REQUIRED)
 add_executable(bouncy main.cpp
         sdl.cpp
-        sdl.h)
+        sdl.h
+        event.cpp
+        event.h)
 target_link_libraries(bouncy PRIVATE SDL3::SDL3)
