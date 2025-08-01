@@ -1,10 +1,16 @@
 #ifndef EVENT_H
 #define EVENT_H
-#include "sdl.h"
+
+#include <vector>
+
+enum class GameEvent {
+    QUIT,
+    NONE
+};
 
 /**
- * Main game loop.
+ * Process pending events.
  */
-void game_loop(SDLEnv &env);
+std::vector<GameEvent> process_events();
 
 #endif //EVENT_H

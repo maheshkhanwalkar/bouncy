@@ -5,7 +5,7 @@
 
 SDLEnv::SDLEnv(const std::string& window_name) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        throw new std::runtime_error("SDL_Init failed");
+        throw std::runtime_error("SDL_Init failed");
     }
 
     this->window = SDL_CreateWindow(window_name.c_str(), 800, 800, 0);

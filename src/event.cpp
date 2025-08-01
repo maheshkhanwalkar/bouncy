@@ -3,14 +3,18 @@
 
 #include <SDL3/SDL_events.h>
 
-void game_loop(SDLEnv& env) {
-    bool quit = false;
+std::vector<GameEvent> process_events() {
+    std::vector<GameEvent> events;
     SDL_Event event;
 
-    while (!quit) {
-        SDL_PollEvent(&event);
+    while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE) {
-            quit = true;
+            // there's no point retaining other events -- quit will override all
+            events.clear();
+            events.push_back(GameEvent::QUIT);
+            break;
         }
     }
+
+    return events;
 }
