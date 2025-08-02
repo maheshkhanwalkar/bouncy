@@ -27,6 +27,17 @@ static vec2 generate_random_velocity(random_generator& rng) {
     return vec2(static_cast<float>(x), static_cast<float>(y));
 }
 
+static SDL_Color get_sdl_color(const ball_color color) {
+    switch (color) {
+        case ball_color::RED:
+            return {255, 0, 0, SDL_ALPHA_OPAQUE};
+        case ball_color::GREEN:
+            return {0, 255, 0, SDL_ALPHA_OPAQUE};
+        case ball_color::BLUE:
+            return {0, 0, 255, SDL_ALPHA_OPAQUE};
+    }
+}
+
 game_state init(const SDLEnv& env) {
     int w, h;
     constexpr float offset = 10;
@@ -52,7 +63,8 @@ retry:
         const float y = rng.get(offset + radius, h - offset - radius);
         const auto velocity = generate_random_velocity(rng);
 
-        const ball b = {vec2(x, y), radius, mass, velocity};
+        const auto color = static_cast<ball_color>(rng.get(0, 2));
+        const ball b = {vec2(x, y), radius, mass, velocity, color};
 
         // We don't want to add a ball already colliding with another ball
         for (const ball& other: balls) {
@@ -114,7 +126,8 @@ void render_ball(const SDLEnv& env, const ball& ball) {
     const auto rect = SDL_FRect{ball.get_pos().x - ball.get_radius(),
         ball.get_pos().y - ball.get_radius(), ball.get_radius() * 2, ball.get_radius() * 2};
 
-    SDL_SetRenderDrawColor(env.renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+    const auto [r, g, b, a] = get_sdl_color(ball.get_color());
+    SDL_SetRenderDrawColor(env.renderer, r, g, b, a);
     SDL_RenderFillRect(env.renderer, &rect);
 }
 

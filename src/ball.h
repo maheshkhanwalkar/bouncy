@@ -4,6 +4,12 @@
 #include "vec.h"
 #include "wall.h"
 
+enum class ball_color {
+    RED,
+    GREEN,
+    BLUE,
+};
+
 class ball {
 public:
     /**
@@ -12,8 +18,9 @@ public:
      * @param radius ball's radius (in meters)
      * @param mass the ball's mass (in kg)
      * @param velocity ball's velocity in m/s
+     * @param color the ball's color
      */
-    ball(vec2 pos, float radius, float mass, vec2 velocity);
+    ball(vec2 pos, float radius, float mass, vec2 velocity, ball_color color);
 
     /**
      * Move the ball
@@ -49,11 +56,13 @@ public:
 
     [[nodiscard]] vec2 get_pos() const;
     [[nodiscard]] float get_radius() const;
+    [[nodiscard]] ball_color get_color() const;
 private:
     vec2 pos;
     vec2 velocity;
     float radius;
     float mass;
+    ball_color color;
 };
 
 #endif //BALL_H

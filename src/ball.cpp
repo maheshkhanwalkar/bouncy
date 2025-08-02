@@ -1,7 +1,7 @@
 #include "ball.h"
 
-ball::ball(const vec2 pos, const float radius, const float mass, const vec2 velocity): pos(pos), velocity(velocity),
-    radius(radius), mass(mass) { }
+ball::ball(const vec2 pos, const float radius, const float mass, const vec2 velocity, const ball_color color): pos(pos),
+    velocity(velocity), radius(radius), mass(mass), color(color) { }
 
 void ball::move(const float time) {
     // s = s_0 + v * t
@@ -57,4 +57,8 @@ vec2 ball::get_pos() const {
 
 float ball::get_radius() const {
     return this->radius;
+}
+
+ball_color ball::get_color() const {
+    return this->color;
 }
