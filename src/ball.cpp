@@ -2,7 +2,8 @@
 
 #include <cmath>
 
-ball::ball(const vec2 pos, const float radius, const vec2 velocity): pos(pos), radius(radius), velocity(velocity) { }
+ball::ball(const vec2 pos, const float radius, const float mass, const vec2 velocity): pos(pos), radius(radius),
+    mass(mass), velocity(velocity) { }
 
 void ball::move(const float time) {
     // s = s_0 + v * t
@@ -35,4 +36,19 @@ void ball::collide(const wall &wall) {
     // is preserved, but the direction is reflected over the wall's normal vector.
     //   V = V_1 - 2 * (V_1 . n) n
     this->velocity = this->velocity - 2 * this->velocity.dot(wall.get_normal()) * wall.get_normal();
+}
+
+void ball::collide(ball &other) {
+    if (!this->is_colliding(other)) {
+        return;
+    }
+
+    // Perfectly elastic collision between the two balls
+    const vec2 our_new_velocity = ((this->mass - other.mass) / (this->mass + other.mass)) * this->velocity +
+        (2 * other.mass / (this->mass + other.mass)) * other.velocity;
+    const vec2 other_new_velocity = (2 * this->mass / (this->mass + other.mass)) * this->velocity +
+        ((other.mass - this->mass) / (this->mass + other.mass)) * other.velocity;
+
+    this->velocity = our_new_velocity;
+    other.velocity = other_new_velocity;
 }

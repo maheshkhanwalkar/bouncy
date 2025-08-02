@@ -10,9 +10,10 @@ public:
      * Construct a ball
      * @param pos ball's starting position
      * @param radius ball's radius (in meters)
+     * @param mass the ball's mass (in kg)
      * @param velocity ball's velocity in m/s
      */
-    ball(vec2 pos, float radius, vec2 velocity);
+    ball(vec2 pos, float radius, float mass, vec2 velocity);
 
     /**
      * Move the ball
@@ -39,10 +40,17 @@ public:
      * @param wall the wall
      */
     void collide(const wall &wall);
+
+    /**
+     * Collide the two balls together
+     * @param other the other ball
+     */
+    void collide(ball &other);
 private:
     vec2 pos;
     vec2 velocity;
     float radius;
+    float mass;
 };
 
 #endif //BALL_H
