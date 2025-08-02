@@ -11,5 +11,9 @@ add_executable(bouncy src/main.cpp
         src/event.h
         src/game.cpp
         src/game.cpp
-        src/game.h)
+        src/game.h
+        src/ball.cpp
+        src/ball.h
+        src/vec.cpp
+        src/vec.h)
 target_link_libraries(bouncy PRIVATE SDL3::SDL3)
