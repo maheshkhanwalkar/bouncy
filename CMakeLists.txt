@@ -17,5 +17,7 @@ add_executable(bouncy src/main.cpp
         src/vec.cpp
         src/vec.h
         src/wall.cpp
-        src/wall.h)
+        src/wall.h
+        src/rand.cpp
+        src/rand.h)
 target_link_libraries(bouncy PRIVATE SDL3::SDL3)

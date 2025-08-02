@@ -1,32 +1,70 @@
 #include "game.h"
 
-#include <iostream>
-
-#include "event.h"
-#include "sdl.h"
-#include "ball.h"
-
 #include <SDL3/SDL_timer.h>
+
 #include <vector>
+
+#include "ball.h"
+#include "event.h"
+#include "rand.h"
+#include "sdl.h"
 
 static bool should_quit(const std::vector<GameEvent>& events);
 
 struct game_state {
     std::vector<ball> balls;
     std::vector<wall> walls;
+    random_generator rng;
 };
 
-game_state init() {
-    // The entire initial state is hardcoded for now
-    const ball one = {vec2(100, 100), 10, 1, vec2(50, 80)};
-    const ball two = {vec2(300, 200), 15, 3, vec2(-30, 100)};
+static vec2 generate_random_velocity(random_generator& rng) {
+    int x = rng.get(80, 100);
+    int y = rng.get(80, 100);
 
-    const wall top = {vec2(10, 10), vec2(400, 0)};
-    const wall right = {vec2(410, 10), vec2(0, 400)};
-    const wall bottom = {vec2(410, 410), vec2(-400, 0)};
-    const wall left = {vec2(10, 410), vec2(0, -400)};
+    rng.get_bool() ? x *= -1 : 0;
+    rng.get_bool() ? y *= -1 : 0;
 
-    return {std::vector{one, two}, std::vector{top, right, bottom, left}};
+    return vec2(static_cast<float>(x), static_cast<float>(y));
+}
+
+game_state init(const SDLEnv& env) {
+    int w, h;
+    constexpr float offset = 10;
+    SDL_GetWindowSizeInPixels(env.window, &w, &h);
+
+    const wall top = {vec2(offset, offset), vec2(w - 2 * offset, 0)};
+    const wall right = {vec2(w - offset, offset), vec2(0, h - 2 * offset)};
+    const wall bottom = {vec2(w - offset, h - offset), vec2(-w + 2 * offset, 0)};
+    const wall left = {vec2(10, h - offset), vec2(0, -h + 2 * offset)};
+
+    // Generate balls
+    random_generator rng;
+
+    const int num_balls = rng.get(10, 20);
+    std::vector<ball> balls;
+
+    for (int i = 0; i < num_balls; i++) {
+retry:
+        const float mass = rng.get(1.0f, 5.0f);
+        const float radius = 10 * std::sqrt(mass);
+
+        const float x = rng.get(offset + radius, w - offset - radius);
+        const float y = rng.get(offset + radius, h - offset - radius);
+        const auto velocity = generate_random_velocity(rng);
+
+        const ball b = {vec2(x, y), radius, mass, velocity};
+
+        // We don't want to add a ball already colliding with another ball
+        for (const ball& other: balls) {
+            if (b.is_colliding(other)) {
+                goto retry;
+            }
+        }
+
+        balls.emplace_back(b);
+    }
+
+    return {balls, std::vector{top, right, bottom, left}, rng};
 }
 
 void update(game_state& state, const Uint64 delta_time_ms) {
@@ -96,7 +134,7 @@ void render(const SDLEnv& env, const game_state& state) {
 
 void game_loop(const SDLEnv &env) {
     Uint64 prev_time = 0;
-    game_state state = init();
+    game_state state = init(env);
 
     while (true) {
         std::vector<GameEvent> events = process_events();

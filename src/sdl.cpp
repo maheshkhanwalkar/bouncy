@@ -8,7 +8,7 @@ SDLEnv::SDLEnv(const std::string& window_name) {
         throw std::runtime_error("SDL_Init failed");
     }
 
-    this->window = SDL_CreateWindow(window_name.c_str(), 800, 800, 0);
+    this->window = SDL_CreateWindow(window_name.c_str(), 900, 900, 0);
     this->renderer = SDL_CreateRenderer(window, nullptr);
 }
 
