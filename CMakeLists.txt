@@ -4,6 +4,7 @@ project(bouncy)
 set(CMAKE_CXX_STANDARD 20)
 
 find_package(SDL3 REQUIRED)
+find_package(SDL3_image REQUIRED)
 add_executable(bouncy src/main.cpp
         src/sdl.cpp
         src/sdl.h
@@ -20,4 +21,4 @@ add_executable(bouncy src/main.cpp
         src/wall.h
         src/rand.cpp
         src/rand.h)
-target_link_libraries(bouncy PRIVATE SDL3::SDL3)
+target_link_libraries(bouncy PRIVATE SDL3::SDL3 SDL3_image::SDL3_image)

@@ -1,6 +1,7 @@
 #include "game.h"
 
 #include <SDL3/SDL_timer.h>
+#include <SDL3_image/SDL_image.h>
 
 #include <vector>
 
@@ -35,14 +36,26 @@ static SDL_Color get_sdl_color(const ball_color color) {
             return {0, 255, 0, SDL_ALPHA_OPAQUE};
         case ball_color::BLUE:
             return {0, 0, 255, SDL_ALPHA_OPAQUE};
+        case ball_color::YELLOW:
+            return {255, 255, 0, SDL_ALPHA_OPAQUE};
+        case ball_color::PURPLE:
+            return {255, 0, 255, SDL_ALPHA_OPAQUE};
+        case ball_color::ORANGE:
+            return {255, 165, 0, SDL_ALPHA_OPAQUE};
     }
+
+    throw std::runtime_error(std::format("invalid ball color: {}", static_cast<int>(color)));
 }
 
-game_state init(const SDLEnv& env) {
+static game_state init(SDLEnv& env) {
     int w, h;
     constexpr float offset = 10;
     SDL_GetWindowSizeInPixels(env.window, &w, &h);
 
+    // Load ball texture
+    env.load_texture("assets/ball.png", "ball");
+
+    // Generate walls
     const wall top = {vec2(offset, offset), vec2(w - 2 * offset, 0)};
     const wall right = {vec2(w - offset, offset), vec2(0, h - 2 * offset)};
     const wall bottom = {vec2(w - offset, h - offset), vec2(-w + 2 * offset, 0)};
@@ -63,7 +76,7 @@ retry:
         const float y = rng.get(offset + radius, h - offset - radius);
         const auto velocity = generate_random_velocity(rng);
 
-        const auto color = static_cast<ball_color>(rng.get(0, 2));
+        const auto color = static_cast<ball_color>(rng.get(0, 5));
         const ball b = {vec2(x, y), radius, mass, velocity, color};
 
         // We don't want to add a ball already colliding with another ball
@@ -79,7 +92,7 @@ retry:
     return {balls, std::vector{top, right, bottom, left}, rng};
 }
 
-void update(game_state& state, const Uint64 delta_time_ms) {
+static void update(game_state& state, const Uint64 delta_time_ms) {
     // Update the ball positions
     const float time_s = static_cast<float>(delta_time_ms) / 1000.0f;
     for (ball& ball : state.balls) {
@@ -111,7 +124,7 @@ void update(game_state& state, const Uint64 delta_time_ms) {
     }
 }
 
-void render_wall(const SDLEnv& env, const wall& wall) {
+static void render_wall(const SDLEnv& env, const wall& wall) {
     const float x1 = wall.get_pos().x;
     const float y1 = wall.get_pos().y;
     const float x2 = x1 + wall.get_direction().x;
@@ -121,17 +134,18 @@ void render_wall(const SDLEnv& env, const wall& wall) {
     SDL_RenderLine(env.renderer, x1, y1, x2, y2);
 }
 
-void render_ball(const SDLEnv& env, const ball& ball) {
-    // FIXME: actually render a circle and not a rect
+static void render_ball(SDLEnv& env, const ball& ball) {
     const auto rect = SDL_FRect{ball.get_pos().x - ball.get_radius(),
         ball.get_pos().y - ball.get_radius(), ball.get_radius() * 2, ball.get_radius() * 2};
 
-    const auto [r, g, b, a] = get_sdl_color(ball.get_color());
-    SDL_SetRenderDrawColor(env.renderer, r, g, b, a);
-    SDL_RenderFillRect(env.renderer, &rect);
+    SDL_Texture* texture = env.get_texture("ball");
+    const auto sdl_color = get_sdl_color(ball.get_color());
+
+    SDL_SetTextureColorMod(texture, sdl_color.r, sdl_color.g, sdl_color.b);
+    SDL_RenderTexture(env.renderer, texture, nullptr, &rect);
 }
 
-void render(const SDLEnv& env, const game_state& state) {
+static void render(SDLEnv& env, const game_state& state) {
     SDL_SetRenderDrawColor(env.renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(env.renderer);
 
@@ -145,7 +159,7 @@ void render(const SDLEnv& env, const game_state& state) {
     SDL_RenderPresent(env.renderer);
 }
 
-void game_loop(const SDLEnv &env) {
+void game_loop(SDLEnv &env) {
     Uint64 prev_time = 0;
     game_state state = init(env);
 
@@ -164,7 +178,7 @@ void game_loop(const SDLEnv &env) {
     }
 }
 
-bool should_quit(const std::vector<GameEvent>& events) {
+static bool should_quit(const std::vector<GameEvent>& events) {
     if (!events.empty() && events.back() == GameEvent::QUIT) {
         return true;
     }

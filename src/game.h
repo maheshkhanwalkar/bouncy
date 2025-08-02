@@ -2,6 +2,6 @@
 #define GAME_H
 #include "sdl.h"
 
-void game_loop(const SDLEnv &env);
+void game_loop(SDLEnv &env);
 
 #endif //GAME_H

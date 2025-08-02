@@ -2,7 +2,7 @@
 #include "sdl.h"
 
 int main() {
-    const SDLEnv env("Bouncy");
+    SDLEnv env("Bouncy");
     game_loop(env);
 
     return 0;

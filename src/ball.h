@@ -8,6 +8,9 @@ enum class ball_color {
     RED,
     GREEN,
     BLUE,
+    YELLOW,
+    PURPLE,
+    ORANGE,
 };
 
 class ball {
