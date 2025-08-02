@@ -46,6 +46,9 @@ public:
      * @param other the other ball
      */
     void collide(ball &other);
+
+    [[nodiscard]] vec2 get_pos() const;
+    [[nodiscard]] float get_radius() const;
 private:
     vec2 pos;
     vec2 velocity;

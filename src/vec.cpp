@@ -38,3 +38,8 @@ float vec2::length() const {
 vec2 vec2::normalize() const {
     return *this / this->length();
 }
+
+std::ostream& operator<<(std::ostream& os, const vec2& vec) {
+    os << "<" << vec.x << ", " << vec.y << ">";
+    return os;
+}

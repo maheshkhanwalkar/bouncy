@@ -1,6 +1,8 @@
 #ifndef VEC_H
 #define VEC_H
 
+#include <iostream>
+
 struct vec2 {
     float x, y;
 
@@ -14,6 +16,8 @@ struct vec2 {
     [[nodiscard]] float dist(const vec2& other) const;
     [[nodiscard]] float length() const;
     [[nodiscard]] vec2 normalize() const;
+
+    friend std::ostream& operator<<(std::ostream& os, const vec2& vec);
 };
 
 vec2 operator*(const float& scalar, const vec2& vec);

@@ -13,7 +13,6 @@ public:
     explicit SDLEnv(const std::string &window_name);
     ~SDLEnv();
 
-private:
     SDL_Window* window;
     SDL_Renderer *renderer;
 };

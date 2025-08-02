@@ -1,9 +1,7 @@
 #include "ball.h"
 
-#include <cmath>
-
-ball::ball(const vec2 pos, const float radius, const float mass, const vec2 velocity): pos(pos), radius(radius),
-    mass(mass), velocity(velocity) { }
+ball::ball(const vec2 pos, const float radius, const float mass, const vec2 velocity): pos(pos), velocity(velocity),
+    radius(radius), mass(mass) { }
 
 void ball::move(const float time) {
     // s = s_0 + v * t
@@ -51,4 +49,12 @@ void ball::collide(ball &other) {
 
     this->velocity = our_new_velocity;
     other.velocity = other_new_velocity;
+}
+
+vec2 ball::get_pos() const {
+    return this->pos;
+}
+
+float ball::get_radius() const {
+    return this->radius;
 }
