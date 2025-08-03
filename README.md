@@ -10,6 +10,9 @@ collide with each other and the walls, which changes the balls' velocity, accord
 * Press '-' to remove a ball
 * Press ESC to quit (or just close the window)
 
+## Additional Details
+For more details on the physics, see: https://www.notion.so/Bouncy-244694c2830b807b9f8bd7bb30b19fb2 for the full writeup.
+
 ## Screenshot
 
 <img width="900" height="928" alt="Screenshot 2025-08-03 at 10 32 13 AM" src="https://github.com/user-attachments/assets/b55a7f37-8a5f-4ada-9bb5-c6842c84d959" />
