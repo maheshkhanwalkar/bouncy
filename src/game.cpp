@@ -60,6 +60,7 @@ static game_state init(SDLEnv& env) {
     const wall right = {vec2(w - offset, offset), vec2(0, h - 2 * offset)};
     const wall bottom = {vec2(w - offset, h - offset), vec2(-w + 2 * offset, 0)};
     const wall left = {vec2(10, h - offset), vec2(0, -h + 2 * offset)};
+    const std::vector walls = {top, right, bottom, left};
 
     // Generate balls
     random_generator rng;
@@ -72,8 +73,8 @@ retry:
         const float mass = rng.get(1.0f, 5.0f);
         const float radius = 10 * std::sqrt(mass);
 
-        const float x = rng.get(offset + radius, w - offset - radius);
-        const float y = rng.get(offset + radius, h - offset - radius);
+        const float x = rng.get(offset + radius * 2, w - offset - radius * 2);
+        const float y = rng.get(offset + radius * 2, h - offset - radius * 2);
         const auto velocity = generate_random_velocity(rng);
 
         const auto color = static_cast<ball_color>(rng.get(0, 5));
@@ -89,7 +90,7 @@ retry:
         balls.emplace_back(b);
     }
 
-    return {balls, std::vector{top, right, bottom, left}, rng};
+    return {balls, walls, rng};
 }
 
 static void update(game_state& state, const Uint64 delta_time_ms) {
