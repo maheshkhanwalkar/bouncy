@@ -10,7 +10,8 @@
 #include "rand.h"
 #include "sdl.h"
 
-static bool should_quit(const std::vector<GameEvent>& events);
+static constexpr float OFFSET = 10;
+static constexpr int MAX_BALLS = 30;
 
 struct game_state {
     std::vector<ball> balls;
@@ -47,50 +48,82 @@ static SDL_Color get_sdl_color(const ball_color color) {
     throw std::runtime_error(std::format("invalid ball color: {}", static_cast<int>(color)));
 }
 
-static game_state init(SDLEnv& env) {
+static void create_ball(const SDLEnv& env, random_generator &rng, std::vector<ball>& balls) {
     int w, h;
-    constexpr float offset = 10;
     SDL_GetWindowSizeInPixels(env.window, &w, &h);
 
-    // Load ball texture
-    env.load_texture("assets/ball.png", "ball");
-
-    // Generate walls
-    const wall top = {vec2(offset, offset), vec2(w - 2 * offset, 0)};
-    const wall right = {vec2(w - offset, offset), vec2(0, h - 2 * offset)};
-    const wall bottom = {vec2(w - offset, h - offset), vec2(-w + 2 * offset, 0)};
-    const wall left = {vec2(10, h - offset), vec2(0, -h + 2 * offset)};
-    const std::vector walls = {top, right, bottom, left};
-
-    // Generate balls
-    random_generator rng;
-
-    const int num_balls = rng.get(10, 20);
-    std::vector<ball> balls;
-
-    for (int i = 0; i < num_balls; i++) {
-retry:
+    while (true) {
         const float mass = rng.get(1.0f, 5.0f);
         const float radius = 10 * std::sqrt(mass);
 
-        const float x = rng.get(offset + radius * 2, w - offset - radius * 2);
-        const float y = rng.get(offset + radius * 2, h - offset - radius * 2);
+        const float x = rng.get(OFFSET + radius * 2, w - OFFSET - radius * 2);
+        const float y = rng.get(OFFSET + radius * 2, h - OFFSET - radius * 2);
         const auto velocity = generate_random_velocity(rng);
 
         const auto color = static_cast<ball_color>(rng.get(0, 5));
         const ball b = {vec2(x, y), radius, mass, velocity, color};
 
         // We don't want to add a ball already colliding with another ball
+        bool is_colliding = false;
         for (const ball& other: balls) {
             if (b.is_colliding(other)) {
-                goto retry;
+                is_colliding = true;
+                break;
             }
         }
 
-        balls.emplace_back(b);
+        if (!is_colliding) {
+            balls.emplace_back(b);
+            break;
+        }
+    }
+}
+
+static game_state init(SDLEnv& env) {
+    int w, h;
+    SDL_GetWindowSizeInPixels(env.window, &w, &h);
+
+    // Load ball texture
+    env.load_texture("assets/ball.png", "ball");
+
+    // Generate walls
+    const wall top = {vec2(OFFSET, OFFSET), vec2(w - 2 * OFFSET, 0)};
+    const wall right = {vec2(w - OFFSET, OFFSET), vec2(0, h - 2 * OFFSET)};
+    const wall bottom = {vec2(w - OFFSET, h - OFFSET), vec2(-w + 2 * OFFSET, 0)};
+    const wall left = {vec2(10, h - OFFSET), vec2(0, -h + 2 * OFFSET)};
+    const std::vector walls = {top, right, bottom, left};
+
+    // Generate balls
+    random_generator rng;
+
+    const int num_balls = rng.get(10, MAX_BALLS);
+    std::vector<ball> balls;
+
+    for (int i = 0; i < num_balls; i++) {
+        create_ball(env, rng, balls);
     }
 
     return {balls, walls, rng};
+}
+
+static bool handle_events(SDLEnv& env, game_state& state, const std::vector<GameEvent>& events) {
+    for (const GameEvent& event : events) {
+        switch (event) {
+            case GameEvent::QUIT:
+                return false;
+            case GameEvent::INCREASE_BALLS:
+                if (state.balls.size() == MAX_BALLS) {
+                    break;
+                }
+                create_ball(env, state.rng, state.balls);
+                break;
+            case GameEvent::DECREASE_BALLS:
+                state.balls.erase(state.balls.begin());
+                break;
+        }
+    }
+
+    return true;
 }
 
 static void update(game_state& state, const Uint64 delta_time_ms) {
@@ -165,8 +198,8 @@ void game_loop(SDLEnv &env) {
     game_state state = init(env);
 
     while (true) {
-        std::vector<GameEvent> events = process_events();
-        if (should_quit(events)) {
+        if (std::vector<GameEvent> events = process_events();
+            !handle_events(env, state, events)) {
             break;
         }
 
@@ -177,11 +210,4 @@ void game_loop(SDLEnv &env) {
         update(state, delta_time);
         render(env, state);
     }
-}
-
-static bool should_quit(const std::vector<GameEvent>& events) {
-    if (!events.empty() && events.back() == GameEvent::QUIT) {
-        return true;
-    }
-    return false;
 }

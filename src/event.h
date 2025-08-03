@@ -5,7 +5,8 @@
 
 enum class GameEvent {
     QUIT,
-    NONE
+    INCREASE_BALLS,
+    DECREASE_BALLS,
 };
 
 /**
